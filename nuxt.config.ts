@@ -43,7 +43,7 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    postgresUrl: process.env.POSTGRES_URL || '',
+    postgresUrl: process.env.POSTGRES_URL || process.env.DATABASE_URL || '',
     blobReadWriteToken: process.env.BLOB_READ_WRITE_TOKEN || '',
     cronSecret: process.env.CRON_SECRET || '',
   },

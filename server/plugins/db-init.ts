@@ -1,3 +1,4 @@
+import { neon } from '@neondatabase/serverless'
 import { useDB } from '../database'
 import { products, productLinks, resources, posts, comments } from '../database/schema'
 import { count } from 'drizzle-orm'
@@ -6,15 +7,85 @@ import {
   seedResources, seedPosts, seedComments,
 } from '../database/seed'
 
+const createTablesSQL = `
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  category TEXT NOT NULL,
+  subcategory TEXT,
+  description TEXT,
+  image_url TEXT,
+  price_range TEXT,
+  rating REAL DEFAULT 0,
+  rating_count INTEGER DEFAULT 0,
+  rank INTEGER DEFAULT 0,
+  recommend_reason TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS product_links (
+  id SERIAL PRIMARY KEY,
+  product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  platform TEXT NOT NULL,
+  url TEXT NOT NULL,
+  price TEXT
+);
+
+CREATE TABLE IF NOT EXISTS resources (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  type TEXT NOT NULL,
+  category TEXT NOT NULL,
+  description TEXT,
+  image_url TEXT,
+  file_url TEXT,
+  video_url TEXT,
+  platform TEXT,
+  author TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  content TEXT NOT NULL,
+  category TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  images TEXT,
+  likes INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS comments (
+  id SERIAL PRIMARY KEY,
+  post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  author_name TEXT NOT NULL,
+  likes INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+`
+
 export default defineNitroPlugin(async () => {
   try {
-    const db = useDB()
+    const config = useRuntimeConfig()
 
-    // Check if products table has data
+    if (!config.postgresUrl) {
+      console.warn('[db-init] POSTGRES_URL not set, skipping initialization')
+      return
+    }
+
+    // Create tables using raw SQL
+    const sql = neon(config.postgresUrl)
+    await sql(createTablesSQL)
+    console.log('[db-init] Tables ensured')
+
+    // Seed data if empty
+    const db = useDB()
     const [{ value: productCount }] = await db.select({ value: count() }).from(products)
 
     if (productCount === 0) {
-      console.log('[auto-init] Products table empty, seeding...')
+      console.log('[db-init] Products table empty, seeding...')
 
       const allProducts = [...yarnProducts, ...hookProducts]
       const allLinks = { ...yarnLinks, ...hookLinks }
@@ -35,12 +106,10 @@ export default defineNitroPlugin(async () => {
         }
       }
 
-      // Seed resources
       for (const r of seedResources) {
         await db.insert(resources).values(r)
       }
 
-      // Seed posts
       const postIds: number[] = []
       for (const p of seedPosts) {
         const [inserted] = await db.insert(posts).values({
@@ -53,7 +122,6 @@ export default defineNitroPlugin(async () => {
         if (inserted) postIds.push(inserted.id)
       }
 
-      // Seed comments
       for (const c of seedComments) {
         const postId = postIds[c.postIndex]
         if (postId) {
@@ -65,9 +133,11 @@ export default defineNitroPlugin(async () => {
         }
       }
 
-      console.log(`[auto-init] Seeded ${allProducts.length} products, ${seedResources.length} resources, ${seedPosts.length} posts`)
+      console.log(`[db-init] Seeded ${allProducts.length} products, ${seedResources.length} resources, ${seedPosts.length} posts`)
+    } else {
+      console.log(`[db-init] Database already has ${productCount} products, skipping seed`)
     }
   } catch (err) {
-    console.error('[auto-init] Failed:', err)
+    console.error('[db-init] Failed:', err)
   }
 })

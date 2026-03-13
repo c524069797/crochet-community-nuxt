@@ -1,4 +1,4 @@
-import { sql } from '@vercel/postgres'
+import { createClient } from '@vercel/postgres'
 
 export default defineEventHandler(async () => {
   const checks: Record<string, unknown> = {
@@ -7,7 +7,8 @@ export default defineEventHandler(async () => {
   }
 
   try {
-    const result = await sql`SELECT 1 as test`
+    const client = createClient()
+    const result = await client.query('SELECT 1 as test')
     checks.db_connection = 'OK'
     checks.db_result = result.rows
   } catch (err: unknown) {

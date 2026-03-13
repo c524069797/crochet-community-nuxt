@@ -1,5 +1,4 @@
-import { sql } from '@vercel/postgres'
-import { useDB } from '../database'
+import { useDB, getClient } from '../database'
 import { products, productLinks, resources, posts, comments } from '../database/schema'
 import { count } from 'drizzle-orm'
 import {
@@ -68,8 +67,9 @@ CREATE TABLE IF NOT EXISTS comments (
 
 export default defineNitroPlugin(async () => {
   try {
-    // Create tables using raw SQL via @vercel/postgres
-    await sql.query(createTablesSQL)
+    // Create tables using raw SQL via @vercel/postgres client
+    const client = getClient()
+    await client.query(createTablesSQL)
     console.log('[db-init] Tables ensured')
 
     // Seed data if empty

@@ -69,8 +69,9 @@ export default defineNitroPlugin(async () => {
   }
 
   try {
-    // Create tables one by one
     const pool = getPool()
+
+    // Create tables one by one
     for (const sql of createTableStatements) {
       await pool.query(sql)
     }
@@ -78,86 +79,74 @@ export default defineNitroPlugin(async () => {
 
     const db = useDB()
 
-    // Seed products if empty
+    // Seed products (batch insert)
     const [{ value: productCount }] = await db.select({ value: count() }).from(products)
     if (productCount === 0) {
       console.log('[db-init] Seeding products...')
       const allProducts = [...yarnProducts, ...hookProducts]
       const allLinks = { ...yarnLinks, ...hookLinks }
 
-      for (const p of allProducts) {
-        try {
-          const [inserted] = await db.insert(products).values(p).returning({ id: products.id })
-          const links = allLinks[p.name]
-          if (links && inserted) {
-            for (const link of links) {
-              await db.insert(productLinks).values({
-                productId: inserted.id,
-                platform: link.platform,
-                url: link.url,
-                price: link.price,
-              })
-            }
+      // Batch insert all products at once
+      const inserted = await db.insert(products).values(allProducts).returning({ id: products.id, name: products.name })
+
+      // Batch insert all links
+      const allLinkRows: { productId: number; platform: string; url: string; price: string }[] = []
+      for (const row of inserted) {
+        const links = allLinks[row.name]
+        if (links) {
+          for (const link of links) {
+            allLinkRows.push({
+              productId: row.id,
+              platform: link.platform,
+              url: link.url,
+              price: link.price,
+            })
           }
-        } catch (err) {
-          console.error(`[db-init] Failed to seed product "${p.name}":`, err)
         }
       }
-      console.log(`[db-init] Seeded ${allProducts.length} products`)
+      if (allLinkRows.length > 0) {
+        await db.insert(productLinks).values(allLinkRows)
+      }
+      console.log(`[db-init] Seeded ${inserted.length} products, ${allLinkRows.length} links`)
     }
 
-    // Seed resources if empty (independent of products)
+    // Seed resources (batch insert)
     const [{ value: resourceCount }] = await db.select({ value: count() }).from(resources)
     if (resourceCount === 0) {
       console.log('[db-init] Seeding resources...')
-      for (const r of seedResources) {
-        try {
-          await db.insert(resources).values(r)
-        } catch (err) {
-          console.error(`[db-init] Failed to seed resource "${r.title}":`, err)
-        }
-      }
+      await db.insert(resources).values(seedResources)
       console.log(`[db-init] Seeded ${seedResources.length} resources`)
     }
 
-    // Seed posts if empty (independent of products)
+    // Seed posts (batch insert)
     const [{ value: postCount }] = await db.select({ value: count() }).from(posts)
     if (postCount === 0) {
       console.log('[db-init] Seeding posts...')
-      const postIds: number[] = []
-      for (const p of seedPosts) {
-        try {
-          const [inserted] = await db.insert(posts).values({
-            title: p.title,
-            content: p.content,
-            category: p.category,
-            authorName: p.authorName,
-            likes: p.likes,
-          }).returning({ id: posts.id })
-          if (inserted) postIds.push(inserted.id)
-        } catch (err) {
-          console.error(`[db-init] Failed to seed post "${p.title}":`, err)
-        }
-      }
+      const insertedPosts = await db.insert(posts).values(
+        seedPosts.map(p => ({
+          title: p.title,
+          content: p.content,
+          category: p.category,
+          authorName: p.authorName,
+          likes: p.likes,
+        }))
+      ).returning({ id: posts.id })
 
-      for (const c of seedComments) {
-        const postId = postIds[c.postIndex]
-        if (postId) {
-          try {
-            await db.insert(comments).values({
-              postId,
-              content: c.content,
-              authorName: c.author,
-            })
-          } catch (err) {
-            console.error(`[db-init] Failed to seed comment:`, err)
-          }
-        }
+      // Batch insert comments
+      const commentRows = seedComments
+        .filter(c => insertedPosts[c.postIndex])
+        .map(c => ({
+          postId: insertedPosts[c.postIndex].id,
+          content: c.content,
+          authorName: c.author,
+        }))
+      if (commentRows.length > 0) {
+        await db.insert(comments).values(commentRows)
       }
-      console.log(`[db-init] Seeded ${seedPosts.length} posts, ${seedComments.length} comments`)
+      console.log(`[db-init] Seeded ${insertedPosts.length} posts, ${commentRows.length} comments`)
     }
 
-    console.log(`[db-init] Done. Products: ${productCount}, Resources: ${resourceCount}, Posts: ${postCount}`)
+    console.log('[db-init] Done')
   } catch (err) {
     console.error('[db-init] Failed:', err)
   }

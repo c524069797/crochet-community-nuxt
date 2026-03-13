@@ -1,9 +1,9 @@
-import { createClient } from '@vercel/postgres'
-import { drizzle } from 'drizzle-orm/vercel-postgres'
+import { Pool } from 'pg'
+import { drizzle } from 'drizzle-orm/node-postgres'
 import * as schema from './schema'
 
 let _db: ReturnType<typeof drizzle> | null = null
-let _client: ReturnType<typeof createClient> | null = null
+let _pool: Pool | null = null
 
 function getConnectionString() {
   return process.env.POSTGRES_URL || process.env.DATABASE_URL || ''
@@ -12,14 +12,22 @@ function getConnectionString() {
 export function useDB() {
   if (_db) return _db
 
-  _client = createClient({ connectionString: getConnectionString() })
-  _db = drizzle(_client, { schema })
+  _pool = new Pool({
+    connectionString: getConnectionString(),
+    max: 5,
+    connectionTimeoutMillis: 10000,
+  })
+  _db = drizzle(_pool, { schema })
   return _db
 }
 
-export function getClient() {
-  if (!_client) {
-    _client = createClient({ connectionString: getConnectionString() })
+export function getPool() {
+  if (!_pool) {
+    _pool = new Pool({
+      connectionString: getConnectionString(),
+      max: 5,
+      connectionTimeoutMillis: 10000,
+    })
   }
-  return _client
+  return _pool
 }

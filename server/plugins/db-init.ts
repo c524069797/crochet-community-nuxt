@@ -1,4 +1,4 @@
-import { useDB, getClient } from '../database'
+import { useDB, getPool } from '../database'
 import { products, productLinks, resources, posts, comments } from '../database/schema'
 import { count } from 'drizzle-orm'
 import {
@@ -66,10 +66,16 @@ CREATE TABLE IF NOT EXISTS comments (
 `
 
 export default defineNitroPlugin(async () => {
+  const connStr = process.env.POSTGRES_URL || process.env.DATABASE_URL || ''
+  if (!connStr) {
+    console.warn('[db-init] No database URL found, skipping initialization')
+    return
+  }
+
   try {
-    // Create tables using raw SQL via @vercel/postgres client
-    const client = getClient()
-    await client.query(createTablesSQL)
+    // Create tables using raw SQL via pg Pool
+    const pool = getPool()
+    await pool.query(createTablesSQL)
     console.log('[db-init] Tables ensured')
 
     // Seed data if empty

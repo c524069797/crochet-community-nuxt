@@ -10,14 +10,17 @@ export default defineEventHandler(async (event) => {
 
   const pool = getPool()
 
-  // Drop all tables and recreate
-  await pool.query(`
-    DROP TABLE IF EXISTS comments CASCADE;
-    DROP TABLE IF EXISTS product_links CASCADE;
-    DROP TABLE IF EXISTS posts CASCADE;
-    DROP TABLE IF EXISTS resources CASCADE;
-    DROP TABLE IF EXISTS products CASCADE;
-  `)
+  const dropStatements = [
+    'DROP TABLE IF EXISTS comments CASCADE',
+    'DROP TABLE IF EXISTS product_links CASCADE',
+    'DROP TABLE IF EXISTS posts CASCADE',
+    'DROP TABLE IF EXISTS resources CASCADE',
+    'DROP TABLE IF EXISTS products CASCADE',
+  ]
 
-  return { success: true, message: 'All tables dropped. Restart the app to trigger auto-seed.' }
+  for (const sql of dropStatements) {
+    await pool.query(sql)
+  }
+
+  return { success: true, message: 'All tables dropped. Next request will trigger auto-seed.' }
 })

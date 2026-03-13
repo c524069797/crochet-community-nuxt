@@ -73,68 +73,93 @@ export default defineNitroPlugin(async () => {
   }
 
   try {
-    // Create tables using raw SQL via pg Pool
+    // Create tables using raw SQL
     const pool = getPool()
     await pool.query(createTablesSQL)
     console.log('[db-init] Tables ensured')
 
-    // Seed data if empty
     const db = useDB()
+
+    // Seed products if empty
     const [{ value: productCount }] = await db.select({ value: count() }).from(products)
-
     if (productCount === 0) {
-      console.log('[db-init] Products table empty, seeding...')
-
+      console.log('[db-init] Seeding products...')
       const allProducts = [...yarnProducts, ...hookProducts]
       const allLinks = { ...yarnLinks, ...hookLinks }
 
       for (const p of allProducts) {
-        const [inserted] = await db.insert(products).values(p).returning({ id: products.id })
-
-        const links = allLinks[p.name]
-        if (links && inserted) {
-          for (const link of links) {
-            await db.insert(productLinks).values({
-              productId: inserted.id,
-              platform: link.platform,
-              url: link.url,
-              price: link.price,
-            })
+        try {
+          const [inserted] = await db.insert(products).values(p).returning({ id: products.id })
+          const links = allLinks[p.name]
+          if (links && inserted) {
+            for (const link of links) {
+              await db.insert(productLinks).values({
+                productId: inserted.id,
+                platform: link.platform,
+                url: link.url,
+                price: link.price,
+              })
+            }
           }
+        } catch (err) {
+          console.error(`[db-init] Failed to seed product "${p.name}":`, err)
         }
       }
+      console.log(`[db-init] Seeded ${allProducts.length} products`)
+    }
 
+    // Seed resources if empty (independent of products)
+    const [{ value: resourceCount }] = await db.select({ value: count() }).from(resources)
+    if (resourceCount === 0) {
+      console.log('[db-init] Seeding resources...')
       for (const r of seedResources) {
-        await db.insert(resources).values(r)
+        try {
+          await db.insert(resources).values(r)
+        } catch (err) {
+          console.error(`[db-init] Failed to seed resource "${r.title}":`, err)
+        }
       }
+      console.log(`[db-init] Seeded ${seedResources.length} resources`)
+    }
 
+    // Seed posts if empty (independent of products)
+    const [{ value: postCount }] = await db.select({ value: count() }).from(posts)
+    if (postCount === 0) {
+      console.log('[db-init] Seeding posts...')
       const postIds: number[] = []
       for (const p of seedPosts) {
-        const [inserted] = await db.insert(posts).values({
-          title: p.title,
-          content: p.content,
-          category: p.category,
-          authorName: p.authorName,
-          likes: p.likes,
-        }).returning({ id: posts.id })
-        if (inserted) postIds.push(inserted.id)
+        try {
+          const [inserted] = await db.insert(posts).values({
+            title: p.title,
+            content: p.content,
+            category: p.category,
+            authorName: p.authorName,
+            likes: p.likes,
+          }).returning({ id: posts.id })
+          if (inserted) postIds.push(inserted.id)
+        } catch (err) {
+          console.error(`[db-init] Failed to seed post "${p.title}":`, err)
+        }
       }
 
       for (const c of seedComments) {
         const postId = postIds[c.postIndex]
         if (postId) {
-          await db.insert(comments).values({
-            postId,
-            content: c.content,
-            authorName: c.author,
-          })
+          try {
+            await db.insert(comments).values({
+              postId,
+              content: c.content,
+              authorName: c.author,
+            })
+          } catch (err) {
+            console.error(`[db-init] Failed to seed comment:`, err)
+          }
         }
       }
-
-      console.log(`[db-init] Seeded ${allProducts.length} products, ${seedResources.length} resources, ${seedPosts.length} posts`)
-    } else {
-      console.log(`[db-init] Database already has ${productCount} products, skipping seed`)
+      console.log(`[db-init] Seeded ${seedPosts.length} posts, ${seedComments.length} comments`)
     }
+
+    console.log(`[db-init] Done. Products: ${productCount}, Resources: ${resourceCount}, Posts: ${postCount}`)
   } catch (err) {
     console.error('[db-init] Failed:', err)
   }

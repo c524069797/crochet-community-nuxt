@@ -9,7 +9,7 @@ type NewPost = Omit<InferInsertModel<typeof posts>, 'id' | 'createdAt' | 'likes'
 const yarnProducts: NewProduct[] = [
   {
     name: '雪妃尔萌娃娃四股牛奶棉',
-    category: 'yarn', subcategory: 'cotton',
+    category: 'yarn', subcategory: 'cotton', imageUrl: '/images/products/product-1.jpg',
     description: '小红书钩织圈人手必备！40%涤纶+60%新棉四股牛奶棉，柔软亲肤，颜色鲜艳无色差。钩出来的玩偶精致细腻，可机洗不起球不掉色。新手钩娃娃、发夹的第一选择。每团50g约133米。',
     priceRange: '¥4.5-6/团',
     rating: 4.9, ratingCount: 5680,
@@ -18,7 +18,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '雪妃尔五股牛奶棉',
-    category: 'yarn', subcategory: 'cotton',
+    category: 'yarn', subcategory: 'cotton', imageUrl: '/images/products/product-2.jpg',
     description: '经典五股牛奶棉线，比四股更粗更快出成品。不起球不掉色，扔洗衣机随便洗。适合钩包包、大玩偶、宝宝鞋、毯子等大件作品。颜色选择超过100种，每团50g约95米。',
     priceRange: '¥5.9-8/团',
     rating: 4.8, ratingCount: 4230,
@@ -27,7 +27,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '苏苏姐家四股精梳棉',
-    category: 'yarn', subcategory: 'cotton',
+    category: 'yarn', subcategory: 'cotton', imageUrl: '/images/products/product-3.jpg',
     description: '精梳棉工艺，纤维更整齐顺滑，手感比普通牛奶棉更细腻。配套高清大图教程和完整视频，新手友好。适合钩小玩偶、花束、精细图案作品。对新手特别友好，有材料包可选。',
     priceRange: '¥6-9/团',
     rating: 4.8, ratingCount: 3560,
@@ -36,7 +36,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '恒源祥纯羊毛线',
-    category: 'yarn', subcategory: 'wool',
+    category: 'yarn', subcategory: 'wool', imageUrl: '/images/products/product-4.jpg',
     description: '中华老字号品牌，100%澳洲高支美利奴羊毛。纤维细腻保暖性极佳，手感柔软不扎人。适合编织围巾、帽子、毛衣等冬季单品。品质稳定，国民级毛线品牌。每团50g约200米。',
     priceRange: '¥10-18/团',
     rating: 4.7, ratingCount: 12800,
@@ -45,7 +45,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '九色鹿时尚棉线',
-    category: 'yarn', subcategory: 'cotton',
+    category: 'yarn', subcategory: 'cotton', imageUrl: '/images/products/product-5.jpg',
     description: '国内知名毛线品牌，年轻时尚的代名词。纯棉材质亲肤透气，颜色时尚多样。适合编织夏季衣物、包包、家居饰品。品控一流，每年推出多款新品和新色。每团50g约120米。',
     priceRange: '¥8-15/团',
     rating: 4.7, ratingCount: 2890,
@@ -54,7 +54,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '苏苏姐家段染棉',
-    category: 'yarn', subcategory: 'blend',
+    category: 'yarn', subcategory: 'blend', imageUrl: '/images/products/product-6.jpg',
     description: '颜色清新耐看的段染棉线，不需要换线就能钩出渐变效果。特别适合钩织花朵、花束和渐变围巾。国产段染线性价比最高之选，颜色过渡自然不突兀。每团50g约130米。',
     priceRange: '¥7-12/团',
     rating: 4.7, ratingCount: 1960,
@@ -63,7 +63,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '冰丝线（夏季专用）',
-    category: 'yarn', subcategory: 'blend',
+    category: 'yarn', subcategory: 'blend', imageUrl: '/images/products/product-7.jpg',
     description: '夏季必备线材，触感凉爽丝滑有光泽。适合编织夏日包包、手机袋、遮阳帽等。成品有丝绸般质感，背出去回头率超高。多种颜色可选，是夏日钩织爆款线材。每团50g约120米。',
     priceRange: '¥6-12/团',
     rating: 4.6, ratingCount: 3450,
@@ -72,7 +72,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '5号蕾丝棉线',
-    category: 'yarn', subcategory: 'cotton',
+    category: 'yarn', subcategory: 'cotton', imageUrl: '/images/products/product-8.jpg',
     description: '细号蕾丝线，介于普通棉线和极细蕾丝之间的粗细。钩出来比牛奶棉更精致，又不像3号蕾丝那么费眼睛。适合想要提升作品精致度的进阶玩家，可做花片、桌布、精致玩偶。',
     priceRange: '¥8-15/团',
     rating: 4.6, ratingCount: 1280,
@@ -81,7 +81,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '棉麻混纺线',
-    category: 'yarn', subcategory: 'blend',
+    category: 'yarn', subcategory: 'blend', imageUrl: '/images/products/product-9.jpg',
     description: '70%棉+30%亚麻混纺，兼具棉的柔软和麻的透气。自然色系，天然质朴的文艺感。适合编织夏季包包、杯垫、餐垫等家居饰品。成品自带高级感。每团50g约110米。',
     priceRange: '¥12-20/团',
     rating: 4.5, ratingCount: 980,
@@ -90,7 +90,7 @@ const yarnProducts: NewProduct[] = [
   },
   {
     name: '三利纯棉毛线',
-    category: 'yarn', subcategory: 'cotton',
+    category: 'yarn', subcategory: 'cotton', imageUrl: '/images/products/product-10.jpg',
     description: '老牌毛线企业，100%纯棉材质，品质稳定值得信赖。柔软亲肤不扎手，适合宝宝衣物和贴身织物。颜色素雅自然，每团成分均匀。适合对毛线品质有要求的钩织爱好者。每团50g约125米。',
     priceRange: '¥7-12/团',
     rating: 4.5, ratingCount: 2150,
@@ -103,7 +103,7 @@ const yarnProducts: NewProduct[] = [
 const hookProducts: NewProduct[] = [
   {
     name: 'Tulip ETIMO Rose 郁金香玫瑰钩针套装',
-    category: 'hook', subcategory: 'ergonomic',
+    category: 'hook', subcategory: 'ergonomic', imageUrl: '/images/products/product-11.jpg',
     description: '日本Tulip ETIMO Rose系列，被无数织友称为"梦中情针"。粉色柔软橡胶手柄配缓冲垫设计，针头圆润光滑，凹槽深度恰到好处。长时间钩织手不累，蕾丝到粗针全线覆盖。含2/0-10/0号共8支，附精美收纳盒。',
     priceRange: '¥328-398/套',
     rating: 4.9, ratingCount: 1820,
@@ -112,7 +112,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: 'Clover Amour 可乐暧昧钩针套装',
-    category: 'hook', subcategory: 'ergonomic',
+    category: 'hook', subcategory: 'ergonomic', imageUrl: '/images/products/product-12.jpg',
     description: '日本Clover经典暧昧系列8件套（2.0mm-6.0mm），彩色软塑胶手柄，每个号数对应不同颜色。针杆哑光涂层摩擦力适中，号数雕刻不易磨损。性价比最高的日系品牌钩针，新手到进阶通用。',
     priceRange: '¥189-258/套',
     rating: 4.9, ratingCount: 2350,
@@ -121,7 +121,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: 'Tulip ETIMO Red 郁金香红色钩针套装',
-    category: 'hook', subcategory: 'ergonomic',
+    category: 'hook', subcategory: 'ergonomic', imageUrl: '/images/products/product-13.jpg',
     description: '日本Tulip ETIMO Red系列，哑光红色调不反光护眼。8支人体工学软垫手柄钩针（1.8-5.0mm），针头哑光银色处理，顺滑不挂线。附带拇指靠垫设计，适合长时间精细钩织。',
     priceRange: '¥358-428/套',
     rating: 4.9, ratingCount: 986,
@@ -130,7 +130,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: '沪牌钩针',
-    category: 'hook', subcategory: 'domestic',
+    category: 'hook', subcategory: 'domestic', imageUrl: '/images/products/product-14.jpg',
     description: '国货之光！沪牌钩针以精良的做工和顺滑的手感著称，针头打磨细腻，不挂线不分线。性价比远超日系品牌，小红书上被誉为"国产钩针天花板"。4.0mm以下号数表现尤其出色。',
     priceRange: '¥22-35/支',
     rating: 4.8, ratingCount: 1560,
@@ -139,7 +139,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: '可钩牌钩针',
-    category: 'hook', subcategory: 'domestic',
+    category: 'hook', subcategory: 'domestic', imageUrl: '/images/products/product-15.jpg',
     description: '国产品牌中顺滑度最高的钩针之一，有织友评价"比可乐还顺滑"。针头处理精细，凹槽设计合理，入针出针顺畅。握感舒适，适合长时间钩织。多种号数可选，单支购买灵活。',
     priceRange: '¥25-45/支',
     rating: 4.7, ratingCount: 1230,
@@ -148,7 +148,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: '七针坊钩针',
-    category: 'hook', subcategory: 'domestic',
+    category: 'hook', subcategory: 'domestic', imageUrl: '/images/products/product-16.jpg',
     description: '老牌国产钩针品牌，品控稳定，多年口碑积累。针尖尖度适中，不易劈线。手柄粗细均匀，长时间使用舒适度好。价格亲民，适合新手入门和日常钩织使用。',
     priceRange: '¥20-38/支',
     rating: 4.7, ratingCount: 890,
@@ -157,7 +157,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: 'Clover 可乐经典金色笔式钩针',
-    category: 'hook', subcategory: 'aluminum',
+    category: 'hook', subcategory: 'aluminum', imageUrl: '/images/products/product-17.jpg',
     description: '日本Clover经典42系列金色铝制笔式钩针，轻巧耐用。针头光滑度极高，适合追求速度的进阶玩家。金属针杆导热性好，夏天使用手感清凉。单支购买，按需选号。',
     priceRange: '¥28-42/支',
     rating: 4.8, ratingCount: 1680,
@@ -166,7 +166,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: 'KnitPro Waves 彩木钩针套装',
-    category: 'hook', subcategory: 'wood',
+    category: 'hook', subcategory: 'wood', imageUrl: '/images/products/product-18.jpg',
     description: 'KnitPro Waves系列彩色层压木钩针套装，色彩绚丽。木质针头温润不凉手，适合对金属过敏的织友。Inline直嘴设计，钩口与针杆同宽，出入针顺畅。含9支不同号数，附收纳包。',
     priceRange: '¥128-168/套',
     rating: 4.6, ratingCount: 456,
@@ -175,7 +175,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: '潮购牌钩针',
-    category: 'hook', subcategory: 'domestic',
+    category: 'hook', subcategory: 'domestic', imageUrl: '/images/products/product-19.jpg',
     description: '国产新锐品牌，针头弧度设计独特，入针角度舒适。多款配色可选，既有经典金属色也有彩色手柄款。做工精细，价格实惠，是性价比极高的入门到进阶选择。',
     priceRange: '¥18-35/支',
     rating: 4.6, ratingCount: 670,
@@ -184,7 +184,7 @@ const hookProducts: NewProduct[] = [
   },
   {
     name: '普通竹制钩针套装',
-    category: 'hook', subcategory: 'bamboo',
+    category: 'hook', subcategory: 'bamboo', imageUrl: '/images/products/product-20.jpg',
     description: '天然竹材质钩针12支套装（2.0-10.0mm），轻巧温润不凉手。附赠收纳包。适合纯新手试水入门，价格极其亲民。用来确认自己是否喜欢钩织，零成本试错。',
     priceRange: '¥9.9-25/套',
     rating: 4.2, ratingCount: 3200,

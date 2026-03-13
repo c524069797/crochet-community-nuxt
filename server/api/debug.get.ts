@@ -4,60 +4,74 @@ export default defineEventHandler(async () => {
   const connStr = process.env.POSTGRES_URL || process.env.DATABASE_URL || ''
   const checks: Record<string, unknown> = {}
 
+  const pool = new Pool({
+    connectionString: connStr,
+    max: 1,
+    connectionTimeoutMillis: 10000,
+  })
+
   try {
-    const pool = new Pool({
-      connectionString: connStr,
-      max: 1,
-      connectionTimeoutMillis: 10000,
-    })
-
-    // Test connection
-    const testResult = await pool.query('SELECT 1 as test')
-    checks.db_connection = 'OK'
-
-    // Check which tables exist
-    const tablesResult = await pool.query(`
-      SELECT table_name FROM information_schema.tables
-      WHERE table_schema = 'public'
-      ORDER BY table_name
+    // Check current counts
+    const counts = await pool.query(`
+      SELECT
+        (SELECT count(*) FROM products) as products,
+        (SELECT count(*) FROM resources) as resources,
+        (SELECT count(*) FROM posts) as posts
     `)
-    checks.tables = tablesResult.rows.map((r: Record<string, string>) => r.table_name)
+    checks.counts = counts.rows[0]
 
-    // Try creating one table
+    // Try inserting a test product via raw SQL
     try {
-      await pool.query(`CREATE TABLE IF NOT EXISTS products (
-        id SERIAL PRIMARY KEY,
-        name TEXT NOT NULL,
-        category TEXT NOT NULL,
-        subcategory TEXT,
-        description TEXT,
-        image_url TEXT,
-        price_range TEXT,
-        rating REAL DEFAULT 0,
-        rating_count INTEGER DEFAULT 0,
-        rank INTEGER DEFAULT 0,
-        recommend_reason TEXT,
-        created_at TIMESTAMP DEFAULT NOW()
-      )`)
-      checks.create_table = 'OK'
+      const insertResult = await pool.query(`
+        INSERT INTO products (name, category, subcategory, description, image_url, price_range, rating, rating_count, rank, recommend_reason)
+        VALUES ('测试产品', 'yarn', 'cotton', '测试描述', '/images/products/product-1.jpg', '¥10', 4.5, 100, 99, '测试推荐')
+        RETURNING id
+      `)
+      checks.test_insert = 'OK'
+      checks.test_id = insertResult.rows[0]?.id
+
+      // Delete test row
+      await pool.query(`DELETE FROM products WHERE id = $1`, [insertResult.rows[0]?.id])
+      checks.test_delete = 'OK'
     } catch (err: unknown) {
-      checks.create_table = 'FAILED'
-      checks.create_table_error = err instanceof Error ? err.message : String(err)
+      checks.test_insert = 'FAILED'
+      checks.test_insert_error = err instanceof Error ? err.message : String(err)
     }
 
-    // Re-check tables
-    const tablesResult2 = await pool.query(`
-      SELECT table_name FROM information_schema.tables
-      WHERE table_schema = 'public'
-      ORDER BY table_name
-    `)
-    checks.tables_after = tablesResult2.rows.map((r: Record<string, string>) => r.table_name)
+    // Try using Drizzle to insert
+    try {
+      const { useDB } = await import('~/server/database')
+      const { products } = await import('~/server/database/schema')
+      const db = useDB()
+      const [inserted] = await db.insert(products).values({
+        name: '测试Drizzle产品',
+        category: 'yarn',
+        subcategory: 'cotton',
+        description: '测试',
+        imageUrl: '/images/products/product-1.jpg',
+        priceRange: '¥10',
+        rating: 4.5,
+        ratingCount: 100,
+        rank: 99,
+        recommendReason: '测试',
+      }).returning({ id: products.id })
+      checks.drizzle_insert = 'OK'
+      checks.drizzle_id = inserted?.id
 
-    await pool.end()
+      // Delete test row
+      if (inserted?.id) {
+        await pool.query(`DELETE FROM products WHERE id = $1`, [inserted.id])
+        checks.drizzle_delete = 'OK'
+      }
+    } catch (err: unknown) {
+      checks.drizzle_insert = 'FAILED'
+      checks.drizzle_error = err instanceof Error ? err.message : String(err)
+      checks.drizzle_stack = err instanceof Error ? err.stack?.split('\n').slice(0, 8) : undefined
+    }
   } catch (err: unknown) {
     checks.error = err instanceof Error ? err.message : String(err)
-    checks.stack = err instanceof Error ? err.stack?.split('\n').slice(0, 5) : undefined
   }
 
+  await pool.end()
   return checks
 })
